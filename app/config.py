@@ -9,6 +9,7 @@ surfacing a confusing error on the first request that needs it.
 """
 
 from pathlib import Path
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -62,6 +63,21 @@ class Settings(BaseSettings):
             value = "postgresql://" + value[len("postgres://") :]
         if value.startswith("postgresql://"):
             value = "postgresql+asyncpg://" + value[len("postgresql://") :]
+
+        if value.startswith("postgresql+asyncpg://"):
+            # asyncpg's connect() takes an `ssl` kwarg, not libpq-style
+            # query params — hosts like Neon hand out connection strings
+            # with `sslmode=require` (sometimes also `channel_binding=
+            # require`), and asyncpg rejects unrecognized ones outright
+            # with a TypeError rather than ignoring them. Translate the
+            # one that matters and drop the rest.
+            parts = urlsplit(value)
+            query = dict(parse_qsl(parts.query))
+            new_query = {}
+            if "sslmode" in query:
+                new_query["ssl"] = query["sslmode"]
+            value = urlunsplit(parts._replace(query=urlencode(new_query)))
+
         return value
 
     @property

@@ -40,12 +40,19 @@ pytest   # runs against an isolated in-memory SQLite DB, no setup needed
 ## Deploying
 
 Postgres via Neon, email via Resend (optional — submissions are still
-stored without it), hosted on Render from `render.yaml`. Required env
-vars: `DATABASE_URL`, `ADMIN_API_KEY`, `NOTIFY_EMAIL`, `RESEND_API_KEY`,
-`FROM_EMAIL`, `ALLOWED_ORIGINS` — set in Render's dashboard, nowhere
-else. Render runs `alembic upgrade head` as a pre-deploy step (see
-`render.yaml`) before every deploy, so the database stays in sync with
-the code automatically — no separate migration step to remember.
+stored without it), hosted on Render as a free-tier Web Service.
+Required env vars: `DATABASE_URL`, `ADMIN_API_KEY`, `NOTIFY_EMAIL`,
+`RESEND_API_KEY`, `FROM_EMAIL`, `ALLOWED_ORIGINS` — set in Render's
+dashboard, nowhere else.
+
+Build command runs the migration before starting the app each deploy
+(Render's free tier doesn't support a separate Pre-Deploy Command):
+
+```
+pip install -r requirements.txt && alembic upgrade head
+```
+
+Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 
 The frontend points here via `VITE_CONTACT_API_URL` in
 [Radiant-Gray](https://github.com/adurso0747/Radiant-Gray)'s Netlify

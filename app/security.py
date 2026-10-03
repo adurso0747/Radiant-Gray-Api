@@ -1,10 +1,11 @@
 """
 security.py
 ------------
-Gates the admin-only submissions-listing endpoint behind a single
-shared API key, passed as the X-API-Key header — not full user auth,
-since the only "user" is the band checking their own submissions via
-curl or a quick script. See routers/admin.py.
+Gates admin-only endpoints (currently just the submissions list, see
+routers/admin.py) behind a single shared API key, passed as the
+X-API-Key header — not full user auth, since the only "user" is the
+band checking things via curl or a quick script. Reusable as a
+dependency on any future admin-only route.
 """
 
 from fastapi import Header, HTTPException, status

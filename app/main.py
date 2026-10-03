@@ -3,14 +3,13 @@ main.py
 -------
 FastAPI app entry point — run locally with:
     uvicorn app.main:app --reload
-(from inside server/, with the virtualenv active — see server/README.md)
+(with the virtualenv active — see README.md)
 
-This service exists to own one thing end to end: the Contact page's
-submissions. It replaces Netlify Forms (see src/pages/Contact.tsx in
-the main site) so there's a real, deployed Python backend behind one
-feature, while Decap CMS keeps owning everything else — shows,
-releases, members, site text — unchanged. See server/README.md for the
-full "why" and deployment steps.
+Backend API for radiantgrayband.com. Decap CMS owns the site's content
+(shows, releases, members, text) directly as JSON — this exists for
+things that need actual server-side logic instead, starting with
+contact form submissions (routers/contact.py). New features live as
+their own router + model, same pattern.
 """
 
 from fastapi import FastAPI
@@ -22,7 +21,7 @@ from .config import settings
 from .limiter import limiter
 from .routers import admin, contact
 
-app = FastAPI(title="Radiant Gray Contact API")
+app = FastAPI(title="Radiant Gray API")
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -42,5 +41,5 @@ app.include_router(admin.router)
 async def health() -> dict[str, str]:
     # Hit by Render's health check, and by an external pinger (e.g.
     # UptimeRobot) to reduce how often the free-tier instance goes to
-    # sleep from inactivity — see server/README.md.
+    # sleep from inactivity.
     return {"status": "ok"}

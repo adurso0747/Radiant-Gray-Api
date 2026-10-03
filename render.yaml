@@ -7,7 +7,13 @@ services:
     # migration runs as part of the build instead — same effect (runs
     # once per deploy, before the app starts).
     buildCommand: pip install -r requirements.txt && alembic upgrade head
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    # --forwarded-allow-ips='*' trusts Render's edge to supply an
+    # accurate X-Forwarded-For header — without it, uvicorn only trusts
+    # X-Forwarded-For from 127.0.0.1 by default, so every request would
+    # appear to come from Render's internal proxy instead of the real
+    # visitor, making the per-IP rate limit (see app/limiter.py) one
+    # shared bucket for all visitors instead of one per visitor.
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL

@@ -40,5 +40,17 @@ async def send_notification_email(name: str, email: str, message: str) -> None:
                 json=payload,
             )
             response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        # Resend's response body has the actual reason (e.g. an
+        # unverified domain, or the onboarding@resend.dev sender's
+        # restriction to the account's own email) — plain
+        # logger.exception() only shows the status code, not that.
+        logger.error(
+            "Resend rejected the notification email for %s: %s %s — %s",
+            email,
+            exc.response.status_code,
+            exc.response.reason_phrase,
+            exc.response.text,
+        )
     except httpx.HTTPError:
         logger.exception("Failed to send contact notification email for %s", email)

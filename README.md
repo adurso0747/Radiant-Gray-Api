@@ -2,6 +2,9 @@
 
 [![CI](https://github.com/adurso0747/Radiant-Gray-Api/actions/workflows/ci.yml/badge.svg)](https://github.com/adurso0747/Radiant-Gray-Api/actions/workflows/ci.yml)
 
+Live at **[radiant-gray-api.onrender.com](https://radiant-gray-api.onrender.com)**
+(`/health` for a liveness check; everything else under `/api/`).
+
 Backend API for [radiantgrayband.com](https://radiantgrayband.com) (site
 repo: [Radiant-Gray](https://github.com/adurso0747/Radiant-Gray)). Decap
 CMS owns the site's content directly as JSON — this exists for the parts
@@ -44,6 +47,14 @@ stored without it), hosted on Render as a free-tier Web Service.
 Required env vars: `DATABASE_URL`, `ADMIN_API_KEY`, `NOTIFY_EMAIL`,
 `RESEND_API_KEY`, `FROM_EMAIL`, `ALLOWED_ORIGINS` — set in Render's
 dashboard, nowhere else.
+
+`FROM_EMAIL` matters more than it looks: Resend's shared
+`onboarding@resend.dev` sender only delivers to the email address your
+Resend account itself signed up with, so `NOTIFY_EMAIL` being anything
+else fails with a 403. Verifying your sending domain in Resend
+(Domains → Add Domain → add the SPF/MX/DKIM records it gives you at
+your DNS host) removes that restriction and lets `FROM_EMAIL` be a real
+address on that domain instead.
 
 Build command runs the migration before starting the app each deploy
 (Render's free tier doesn't support a separate Pre-Deploy Command):
